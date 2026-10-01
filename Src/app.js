@@ -17,6 +17,63 @@ res.status(201).json({
    message:"created successfully"
 })
 })
+app.get("/user",async(req,res)=>{
+   const user=await User.find()
+   res.status(200).json({
+      message:"read carefully",
+      user:user
+   })
+})
+app.get("/user/:id",async(req,res)=>{
+   const id=req.params.id;
+   const user=await User.findById(id)
+   res.status(200).json({
+      message:"one specific id is read",
+     users:user
+   })
+})
+app.post("/user",async(req,res)=>{
+   const user=new User({
+     name:req.body.name,
+     email:req.body.email,
+     age:req.body.age 
+   })
+   await user.save();
+   res.status(200).json({
+      message:"new data created"
+   })
+})
+app.get("/user",async(req,res)=>{
+   const user=await User.find();
+   res.status(200).json({
+      message:"read Done ",
+      users:user
+   })
+})
+app.get("/user/:id",async(req,res)=>{
+   const id=req.params.id;
+   const user=await User.findById(id);
+   res.status(200).json({
+      message:"this is the new id",
+      users:user
+   })
+})
+app.patch("/user/:id/",async(req,res)=>{
+   const id =req.params.id;
+   const user=await User.findByIdAndUpdate(id,req.body, { new: true });
+   res.status(200).json({
+      message:"updated",
+      users:user
+   })
+})
+app.delete("/user/:id",async(req,res)=>{
+   const id=req.params.id;
+   const user=await User.findByIdAndDelete(id);
+   res.status(200).json({
+      message:"delet this id",
+      users:user
+   })
+})
 // const notes = []
 // app.post("/notes", (req, res) => {
 //    notes.push(req.body)
