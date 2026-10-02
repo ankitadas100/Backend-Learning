@@ -4,9 +4,16 @@ const app = express()
 const User = require("./models/User");
 
 app.use(express.json());
-
+app.use((req, res, next) => {
+    console.log("Middleware 1 is running");
+    next();
+});
+app.use((req, res, next) => {
+    console.log("Middleware 2");
+    next();
+});
 app.post("/user",async(req,res)=>{
-
+try{
 const user=new User({
    name:req.body.name,
    email:req.body.email,
@@ -16,13 +23,48 @@ await user.save();
 res.status(201).json({
    message:"created successfully"
 })
+}catch(error){
+   res.status(500).json({
+      message:"something went wrong"
+   })
+}
 })
-app.get("/user",async(req,res)=>{
+const CheckUser=(req,res,next)=>{
+   req.user={
+   name:"Ankita",
+   age:21,
+   role:"role"
+   }
+
+    console.log("User middleware");
+    next();
+}
+const CheckRole=(req,res,next)=>{
+if(req.user.role==="user"){
+   next();
+  
+}
+else{
+   res.status(403).json({
+      message:"access denied"
+   })
+}
+}
+
+app.get("/user",CheckUser,CheckRole,async(req,res)=>{
+   try{
    const user=await User.find()
    res.status(200).json({
       message:"read carefully",
-      user:user
+      user:req.user,
+      role:req.role,
+      age:req.age
    })
+}catch(error){
+   res.status(500).json({
+      message:"something went wrong"
+   })
+}
 })
 app.get("/user/:id",async(req,res)=>{
    const id=req.params.id;
@@ -43,6 +85,7 @@ app.post("/user",async(req,res)=>{
       message:"new data created"
    })
 })
+
 app.get("/user",async(req,res)=>{
    const user=await User.find();
    res.status(200).json({
@@ -50,6 +93,7 @@ app.get("/user",async(req,res)=>{
       users:user
    })
 })
+
 app.get("/user/:id",async(req,res)=>{
    const id=req.params.id;
    const user=await User.findById(id);
@@ -74,6 +118,7 @@ app.delete("/user/:id",async(req,res)=>{
       users:user
    })
 })
+
 // const notes = []
 // app.post("/notes", (req, res) => {
 //    notes.push(req.body)
