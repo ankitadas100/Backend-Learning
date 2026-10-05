@@ -1,9 +1,11 @@
 const User = require("../models/User");
 
-const bcrypt=require("bcrypt")
+const bcrypt=require("bcrypt");
+const jwt = require("jsonwebtoken");
 const createUser=async(req,res)=>{
       const password = req.body.password;
       const hashedPassword = await bcrypt.hash(password, 10);
+      jwt.sign(payload, secret)
     try {
       
         const user = new User({
@@ -86,17 +88,24 @@ const loginUser=async(req,res)=>{
        return res.status(401).json({
         message:"invalid email"
        })
+       
     }
     const MatchPassword=await bcrypt.compare(password,user.password);
     if(MatchPassword){
+        const token=jwt.sign(
+        {userId:user._id},
+       process.env.JWT_SECRET
+    )
          res.status(200).json({
-            message:"login sucessfull"
+            message:"login sucessfull",
+            token:token
          })
     }else{
        res.status(401).json({
         message:"password invalid"
        })
     }
+   
    
 }
 module.exports= {createUser,getUser,getUserById,patchUser,deleteUser,loginUser};
