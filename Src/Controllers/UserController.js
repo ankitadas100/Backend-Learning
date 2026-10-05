@@ -1,10 +1,16 @@
 const User = require("../models/User");
+
+const bcrypt=require("bcrypt")
 const createUser=async(req,res)=>{
+      const password = req.body.password;
+      const hashedPassword = await bcrypt.hash(password, 10);
     try {
+      
         const user = new User({
             name: req.body.name,
             email: req.body.email,
-            age: req.body.age
+            age: req.body.age,
+           password:hashedPassword
         });
 
         await user.save();
@@ -73,4 +79,24 @@ const deleteUser=async(req,res)=>{
     });
 
 }
-module.exports= {createUser,getUser,getUserById,patchUser,deleteUser};
+const loginUser=async(req,res)=>{
+    const{email,password}=req.body;
+    const user=await User.findOne({email});
+    if(!user){
+       return res.status(401).json({
+        message:"invalid email"
+       })
+    }
+    const MatchPassword=await bcrypt.compare(password,user.password);
+    if(MatchPassword){
+         res.status(200).json({
+            message:"login sucessfull"
+         })
+    }else{
+       res.status(401).json({
+        message:"password invalid"
+       })
+    }
+   
+}
+module.exports= {createUser,getUser,getUserById,patchUser,deleteUser,loginUser};

@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
         max:60,
         
     },
+       password: {
+        type: String,
+        required: true
+    },
     gender: {
     type: String,
     enum: ["Male", "Female", "Other"]
@@ -33,5 +37,6 @@ status: {
     timestamps: true
     
 });
+
 const user = mongoose.model("user", userSchema)
 module.exports = user;
