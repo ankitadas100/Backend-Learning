@@ -3,6 +3,7 @@ const router=express.Router();
 const User = require("../models/user");
 const {createUser,getUser, getUserById, patchUser, deleteUser,loginUser}=require("../Controllers/UserController");
 const authmiddleware = require("../middleware/authmiddleware");
+const checkRole = require("../middleware/rolemiddleware");
 
 
 router.post("/user",createUser);
@@ -40,5 +41,11 @@ router.get("/profile",authmiddleware,async(req,res)=>{
     res.status(200).json({
         message:"profile accessed"
     })
+})
+router.get("/admin",authmiddleware,checkRole,(req,res)=>{
+    res.status(200).json({
+        message:"successs"
+    })
+
 })
 module.exports = router;
