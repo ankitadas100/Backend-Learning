@@ -1,6 +1,6 @@
 const express=require("express");
 const router=express.Router();
-const User = require("../models/User");
+const User = require("../models/user");
 const {createUser,getUser, getUserById, patchUser, deleteUser,loginUser}=require("../Controllers/UserController");
 const authmiddleware = require("../middleware/authmiddleware");
 

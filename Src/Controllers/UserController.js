@@ -1,11 +1,11 @@
-const User = require("../models/User");
+const User = require("../models/user");
 
 const bcrypt=require("bcrypt");
 const jwt = require("jsonwebtoken");
 const createUser=async(req,res)=>{
       const password = req.body.password;
       const hashedPassword = await bcrypt.hash(password, 10);
-      jwt.sign(payload, secret)
+      
     try {
       
         const user = new User({
@@ -93,7 +93,8 @@ const loginUser=async(req,res)=>{
     const MatchPassword=await bcrypt.compare(password,user.password);
     if(MatchPassword){
         const token=jwt.sign(
-        {userId:user._id},
+        {userId:user._id,
+        role:user.role},
        process.env.JWT_SECRET
     )
          res.status(200).json({
