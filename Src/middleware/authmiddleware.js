@@ -1,23 +1,35 @@
 const jwt = require("jsonwebtoken");
 
 const authmiddleware = async (req, res, next) => {
-try{
-    const token = req.headers.authorization.split(" ")[1];
+    try {
+        if (!req.headers.authorization) {
+           return res.status(401).json({
+                message: "authorization header missing"
 
-    const jwtverify = jwt.verify(
-        token,
-        process.env.JWT_SECRET
-    );
+            })
+        }
+        const parts=req.headers.authorization.split(" ");
+        if(parts[0]!=="Bearer" || !parts[1]){
+            return res.status(401).json({
+                message:"invalid  authorization header"
+            })
+        }
+        const token = parts[1];
 
-    req.user = jwtverify;
+        const jwtverify = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
 
-    next();
-}
-catch{
-    res.status(401).json({
-        message:"invalid token"
-    })
-}
+        req.user = jwtverify;
+
+        next();
+    }
+    catch {
+        res.status(401).json({
+            message: "invalid token"
+        })
+    }
 };
 
 module.exports = authmiddleware;
