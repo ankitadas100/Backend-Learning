@@ -1,7 +1,7 @@
 const express=require("express");
 const router=express.Router();
 const User = require("../models/user");
-const {createUser,getUser, getUserById, patchUser, deleteUser,loginUser}=require("../Controllers/UserController");
+const {createUser,getUser, getUserById, patchUser, deleteUser,loginUser,refreshToken}=require("../Controllers/UserController");
 const authmiddleware = require("../middleware/authmiddleware");
 const checkRole = require("../middleware/rolemiddleware");
 
@@ -48,4 +48,5 @@ router.get("/admin",authmiddleware,checkRole,(req,res)=>{
     })
 
 })
+router.post("/refresh",refreshToken);
 module.exports = router;

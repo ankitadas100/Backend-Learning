@@ -97,9 +97,15 @@ const loginUser=async(req,res)=>{
         role:user.role},
        process.env.JWT_SECRET
     )
+    const refreshToken=jwt.sign(
+        {userId:user._id},
+        process.env.JWT_REFRESH_SECRET,
+        {expiresIn:"7d"}
+    )
          res.status(200).json({
             message:"login sucessfull",
-            token:token
+            token:token,
+            refreshToken:refreshToken
          })
     }else{
        res.status(401).json({
@@ -109,4 +115,38 @@ const loginUser=async(req,res)=>{
    
    
 }
-module.exports= {createUser,getUser,getUserById,patchUser,deleteUser,loginUser};
+const refreshToken=async(req,res)=>{
+    const{refreshToken}=req.body;
+    if(!refreshToken){
+      return  res.status(401).json({
+            message:"refresh token missing"
+        })
+    }
+   
+    const newRefresh=jwt.verify(
+    refreshToken,
+    process.env.JWT_REFRESH_SECRET
+);
+ const user=await User.findById(newRefresh.userId)
+ if(!user){
+    return res.status(401).json({
+        message:"user not find out"
+    })
+ }
+
+
+const refreshAcessToken=jwt.sign(
+    {userId:user._id,
+        role:user.role
+    },
+process.env.JWT_SECRET
+)
+ res.status(200).json({
+            message:"Refresh Token",
+           
+            refreshAcessToken:refreshAcessToken
+         })
+}
+
+
+module.exports= {createUser,getUser,getUserById,patchUser,deleteUser,loginUser,refreshToken};
