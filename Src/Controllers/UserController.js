@@ -179,7 +179,8 @@ const forgetPassword = async (req, res) => {
         user.resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
     res.status(200).json({
-        message: "Reset token generated"
+        message: "Reset token generated",
+          
     });
 
 }
