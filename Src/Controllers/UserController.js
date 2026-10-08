@@ -116,24 +116,27 @@ const loginUser=async(req,res)=>{
    
 }
 const refreshToken=async(req,res)=>{
+    
     const{refreshToken}=req.body;
     if(!refreshToken){
       return  res.status(401).json({
             message:"refresh token missing"
         })
     }
-   
+try{
     const newRefresh=jwt.verify(
     refreshToken,
     process.env.JWT_REFRESH_SECRET
 );
+   
+   
  const user=await User.findById(newRefresh.userId)
  if(!user){
     return res.status(401).json({
         message:"user not find out"
     })
  }
-
+   
 
 const refreshAcessToken=jwt.sign(
     {userId:user._id,
@@ -146,7 +149,16 @@ process.env.JWT_SECRET
            
             refreshAcessToken:refreshAcessToken
          })
+        
 }
+
+catch(error){
+res.status(401).json({
+    message:"invalid"
+})
+}
+}
+
 
 
 module.exports= {createUser,getUser,getUserById,patchUser,deleteUser,loginUser,refreshToken};
