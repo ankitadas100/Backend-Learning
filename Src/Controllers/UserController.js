@@ -1,18 +1,18 @@
 const User = require("../models/user");
 
-const bcrypt=require("bcrypt");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const createUser=async(req,res)=>{
-      const password = req.body.password;
-      const hashedPassword = await bcrypt.hash(password, 10);
-      
+const createUser = async (req, res) => {
+    const password = req.body.password;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     try {
-      
+
         const user = new User({
             name: req.body.name,
             email: req.body.email,
             age: req.body.age,
-           password:hashedPassword
+            password: hashedPassword
         });
 
         await user.save();
@@ -22,14 +22,14 @@ const createUser=async(req,res)=>{
         });
 
     } catch (error) {
-            console.log(error);
+        console.log(error);
         res.status(500).json({
             message: "something went wrong"
         });
     }
 }
-const getUser=async(req,res)=>{
-       try {
+const getUser = async (req, res) => {
+    try {
 
         const user = await User.find();
 
@@ -46,8 +46,8 @@ const getUser=async(req,res)=>{
 
     }
 }
-const getUserById=async(req,res)=>{
-     const id = req.params.id;
+const getUserById = async (req, res) => {
+    const id = req.params.id;
 
     const user = await User.findById(id);
 
@@ -56,8 +56,8 @@ const getUserById=async(req,res)=>{
         users: user
     });
 }
-const patchUser=async(req,res)=>{
-     const id = req.params.id;
+const patchUser = async (req, res) => {
+    const id = req.params.id;
 
     const user = await User.findByIdAndUpdate(
         id,
@@ -70,8 +70,8 @@ const patchUser=async(req,res)=>{
         users: user
     });
 }
-const deleteUser=async(req,res)=>{
-     const id = req.params.id;
+const deleteUser = async (req, res) => {
+    const id = req.params.id;
 
     const user = await User.findByIdAndDelete(id);
 
@@ -81,84 +81,150 @@ const deleteUser=async(req,res)=>{
     });
 
 }
-const loginUser=async(req,res)=>{
-    const{email,password}=req.body;
-    const user=await User.findOne({email});
-    if(!user){
-       return res.status(401).json({
-        message:"invalid email"
-       })
-       
+const loginUser = async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+        return res.status(401).json({
+            message: "invalid email"
+        })
+
     }
-    const MatchPassword=await bcrypt.compare(password,user.password);
-    if(MatchPassword){
-        const token=jwt.sign(
-        {userId:user._id,
-        role:user.role},
-       process.env.JWT_SECRET
-    )
-    const refreshToken=jwt.sign(
-        {userId:user._id},
-        process.env.JWT_REFRESH_SECRET,
-        {expiresIn:"7d"}
-    )
-         res.status(200).json({
-            message:"login sucessfull",
-            token:token,
-            refreshToken:refreshToken
-         })
-    }else{
-       res.status(401).json({
-        message:"password invalid"
-       })
-    }
-   
-   
-}
-const refreshToken=async(req,res)=>{
-    
-    const{refreshToken}=req.body;
-    if(!refreshToken){
-      return  res.status(401).json({
-            message:"refresh token missing"
+    const MatchPassword = await bcrypt.compare(password, user.password);
+    if (MatchPassword) {
+        const token = jwt.sign(
+            {
+                userId: user._id,
+                role: user.role
+            },
+            process.env.JWT_SECRET
+        )
+        const refreshToken = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_REFRESH_SECRET,
+            { expiresIn: "7d" }
+        )
+        res.status(200).json({
+            message: "login sucessfull",
+            token: token,
+            refreshToken: refreshToken
+        })
+    } else {
+        res.status(401).json({
+            message: "password invalid"
         })
     }
-try{
-    const newRefresh=jwt.verify(
-    refreshToken,
-    process.env.JWT_REFRESH_SECRET
-);
-   
-   
- const user=await User.findById(newRefresh.userId)
- if(!user){
-    return res.status(401).json({
-        message:"user not find out"
+
+
+}
+const refreshToken = async (req, res) => {
+
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+        return res.status(401).json({
+            message: "refresh token missing"
+        })
+    }
+    try {
+        const newRefresh = jwt.verify(
+            refreshToken,
+            process.env.JWT_REFRESH_SECRET
+        );
+
+
+        const user = await User.findById(newRefresh.userId)
+        if (!user) {
+            return res.status(401).json({
+                message: "user not find out"
+            })
+        }
+
+
+        const refreshAcessToken = jwt.sign(
+            {
+                userId: user._id,
+                role: user.role
+            },
+            process.env.JWT_SECRET
+        )
+        res.status(200).json({
+            message: "Refresh Token",
+
+            refreshAcessToken: refreshAcessToken
+        })
+
+    }
+
+    catch (error) {
+        res.status(401).json({
+            message: "invalid"
+        })
+    }
+}
+const forgetPassword = async (req, res) => {
+    const { email, } = req.body
+
+    const user = await User.findOne({ email })
+    if (!user) {
+        return res.status(401).json({
+            message: "invalid Email"
+        })
+    }
+    const resetToken = jwt.sign(
+        { user: user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: "15m" }
+    )
+    user.resetToken = resetToken,
+        user.resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
+    await user.save();
+    res.status(200).json({
+        message: "Reset token generated"
+    });
+
+}
+
+const resetPassword = async (req, res) => {
+    try{
+    const { resetToken, password } = req.body
+    const decoded = jwt.verify(
+        resetToken,
+        process.env.JWT_SECRET
+    )
+    const user = await User.findById(decoded.user);
+    if (!user) {
+        return res.status(401).json({
+            message: "invalid"
+        })
+    }
+    if (user.resetTokenExpiry < Date.now()) {
+        return res.status(401).json({
+            message: "reset token expired"
+        })
+    }
+    if (user.resetToken !== resetToken) {
+        return res.status(401).json({
+            message: "invalid token"
+        })
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword
+    user.resetToken = undefined;
+    user.resetTokenExpiry = undefined;
+
+    await user.save()
+    res.status(200).json({
+        message: "password reset successfully"
     })
- }
-   
 
-const refreshAcessToken=jwt.sign(
-    {userId:user._id,
-        role:user.role
-    },
-process.env.JWT_SECRET
-)
- res.status(200).json({
-            message:"Refresh Token",
-           
-            refreshAcessToken:refreshAcessToken
-         })
-        
 }
-
 catch(error){
-res.status(401).json({
-    message:"invalid"
-})
+     return res.status(401).json({
+        message:"invalid"
+    })
 }
 }
 
 
 
-module.exports= {createUser,getUser,getUserById,patchUser,deleteUser,loginUser,refreshToken};
+module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword,resetPassword };

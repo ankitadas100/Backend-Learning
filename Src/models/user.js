@@ -28,11 +28,17 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: ["user", "admin"],
-        default:"admin"
+        default: "admin"
     },
     gender: {
         type: String,
         enum: ["Male", "Female", "Other"]
+    },
+    resetToken: {
+        type: String,
+    },
+    refreshTokenexpiry: {
+        type: Date,
     },
     status: {
         type: String,
