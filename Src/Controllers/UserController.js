@@ -3,10 +3,23 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const createUser = async (req, res) => {
-    const password = req.body.password;
+    const{name,email,age,password}=req.body
+    if(!name || !email ||!age || !password
+    ){
+        return res.status(400).json({
+            message:"all fileds are required"
+        })
+    }
+    if(!email.includes("@") || !email.includes(".")){
+         return res.status(400).json({
+            message:"email is not valid"
+        })
+    }
+    // const password = req.body.password;
+     try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    try {
+   
 
         const user = new User({
             name: req.body.name,
@@ -223,9 +236,8 @@ catch(error){
      return res.status(401).json({
         message:"invalid"
     })
+
 }
 }
 
-
-
-module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword,resetPassword };
+module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword,resetPassword }

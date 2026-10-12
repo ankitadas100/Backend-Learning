@@ -51,4 +51,5 @@ router.get("/admin",authmiddleware,checkRole,(req,res)=>{
 router.post("/refresh",refreshToken);
 router.post("/forgot-Password",forgetPassword);
 router.post("/reset-password",resetPassword);
+router.post("/users",createUser);
 module.exports = router;
