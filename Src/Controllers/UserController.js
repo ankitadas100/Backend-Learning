@@ -15,6 +15,17 @@ const createUser = async (req, res) => {
             message:"email is not valid"
         })
     }
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/;
+    if(!passwordRegex.test(password)){
+        return res.status(400).json({
+            message:"password length must be at least 8 character"
+        })
+    }
+    if(age<18 || age>60){
+        return res.status(400).json({
+            message:"age must be between 18 to 60"
+        })
+    }
     // const password = req.body.password;
      try {
     const hashedPassword = await bcrypt.hash(password, 10);
