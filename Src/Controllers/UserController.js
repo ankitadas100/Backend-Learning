@@ -198,7 +198,7 @@ const resetPassword = async (req, res) => {
             message: "invalid"
         })
     }
-    if (user.resetTokenExpiry < Date.now()) {
+    if (!user.resetTokenExpiry||user.resetTokenExpiry.getTime() < Date.now()) {
         return res.status(401).json({
             message: "reset token expired"
         })
