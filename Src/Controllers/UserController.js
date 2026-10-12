@@ -2,36 +2,36 @@ const User = require("../models/user");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const createUser = async (req, res) => {
-    const{name,email,age,password}=req.body
-    if(!name || !email ||!age || !password
-    ){
+const createUser = async (req, res, next) => {
+    const { name, email, age, password } = req.body
+    if (!name || !email || !age || !password
+    ) {
         return res.status(400).json({
-            message:"all fileds are required"
+            message: "all fileds are required"
         })
     }
-    if(!email.includes("@") || !email.includes(".")){
-         return res.status(400).json({
-            message:"email is not valid"
+    if (!email.includes("@") || !email.includes(".")) {
+        return res.status(400).json({
+            message: "email is not valid"
         })
     }
     const passwordRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$/;
-    if(!passwordRegex.test(password)){
+    if (!passwordRegex.test(password)) {
         return res.status(400).json({
-            message:"password length must be at least 8 character"
+            message: "password length must be at least 8 character"
         })
     }
-    if(age<18 || age>60){
+    if (age < 18 || age > 60) {
         return res.status(400).json({
-            message:"age must be between 18 to 60"
+            message: "age must be between 18 to 60"
         })
     }
     // const password = req.body.password;
-     try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-   
 
+        // throw new Error("Test centralized error handling");
         const user = new User({
             name: req.body.name,
             email: req.body.email,
@@ -45,11 +45,12 @@ const createUser = async (req, res) => {
             message: "created successfully"
         });
 
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            message: "something went wrong"
-        });
+    } catch (err) {
+        next(err)
+        // console.log(err);
+        // res.status(500).json({
+        //     message: "something went wrong"
+        // });
     }
 }
 const getUser = async (req, res) => {
@@ -204,51 +205,51 @@ const forgetPassword = async (req, res) => {
     await user.save();
     res.status(200).json({
         message: "Reset token generated",
-          
+
     });
 
 }
 
 const resetPassword = async (req, res) => {
-    try{
-    const { resetToken, password } = req.body
-    const decoded = jwt.verify(
-        resetToken,
-        process.env.JWT_SECRET
-    )
-    const user = await User.findById(decoded.user);
-    if (!user) {
+    try {
+        const { resetToken, password } = req.body
+        const decoded = jwt.verify(
+            resetToken,
+            process.env.JWT_SECRET
+        )
+        const user = await User.findById(decoded.user);
+        if (!user) {
+            return res.status(401).json({
+                message: "invalid"
+            })
+        }
+        if (!user.resetTokenExpiry || user.resetTokenExpiry.getTime() < Date.now()) {
+            return res.status(401).json({
+                message: "reset token expired"
+            })
+        }
+        if (user.resetToken !== resetToken) {
+            return res.status(401).json({
+                message: "invalid token"
+            })
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        user.password = hashedPassword
+        user.resetToken = undefined;
+        user.resetTokenExpiry = undefined;
+
+        await user.save()
+        res.status(200).json({
+            message: "password reset successfully"
+        })
+
+    }
+    catch (error) {
         return res.status(401).json({
             message: "invalid"
         })
-    }
-    if (!user.resetTokenExpiry||user.resetTokenExpiry.getTime() < Date.now()) {
-        return res.status(401).json({
-            message: "reset token expired"
-        })
-    }
-    if (user.resetToken !== resetToken) {
-        return res.status(401).json({
-            message: "invalid token"
-        })
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    user.password = hashedPassword
-    user.resetToken = undefined;
-    user.resetTokenExpiry = undefined;
 
-    await user.save()
-    res.status(200).json({
-        message: "password reset successfully"
-    })
-
-}
-catch(error){
-     return res.status(401).json({
-        message:"invalid"
-    })
-
-}
+    }
 }
 
-module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword,resetPassword }
+module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword, resetPassword }
