@@ -64,35 +64,39 @@ const getUser = async (req, res) => {
             user: user
         });
 
-    } catch (error) {
-
-        res.status(500).json({
-            message: "something went wrong"
-        });
+    } catch (err) {
+        next(err)
+        // res.status(500).json({
+        //     message: "something went wrong"
+        // });
 
     }
 }
-const getUserById = async (req, res) => {
-    const id = req.params.id;
-    if(!mongoose.Types.ObjectId.isValid(id)){
-    return res.status(400).json({
-        message:"invalid id"
-    })
-}
-  const user = await User.findById(id);
-if(!user){
-    return res.status(400).json({
-        message:"user not found"
-    })
+
+const getUserById = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        // throw new Error("Testing centralized error handling");
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "invalid id"
+            })
+        }
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(400).json({
+                message: "user not found"
+            })
+        }
+        //  res.status(200).json({
+        //         message: "this is the new id",
+        //         users: user
+        //     });
+    } catch (err) {
+        next(err)
+    }
 }
 
-  
-
-    res.status(200).json({
-        message: "this is the new id",
-        users: user
-    });
-}
 
 const patchUser = async (req, res) => {
     const id = req.params.id;
