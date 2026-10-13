@@ -2,6 +2,7 @@ const User = require("../models/user");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const createUser = async (req, res, next) => {
     const { name, email, age, password } = req.body
     if (!name || !email || !age || !password
@@ -73,14 +74,26 @@ const getUser = async (req, res) => {
 }
 const getUserById = async (req, res) => {
     const id = req.params.id;
+    if(!mongoose.Types.ObjectId.isValid(id)){
+    return res.status(400).json({
+        message:"invalid id"
+    })
+}
+  const user = await User.findById(id);
+if(!user){
+    return res.status(400).json({
+        message:"user not found"
+    })
+}
 
-    const user = await User.findById(id);
+  
 
     res.status(200).json({
         message: "this is the new id",
         users: user
     });
 }
+
 const patchUser = async (req, res) => {
     const id = req.params.id;
 
