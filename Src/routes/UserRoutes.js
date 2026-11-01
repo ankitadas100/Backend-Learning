@@ -32,7 +32,8 @@ const CheckRole = (req, res, next) => {
     }
 };
 
-router.get("/user", CheckUser, CheckRole,getUser);
+// router.get("/user", CheckUser, CheckRole,getUser);
+router.get("/user", getUser);
 router.get("/user/:id",getUserById);
 router.patch("/user/:id", patchUser);
 router.post("/login", loginUser);

@@ -55,9 +55,15 @@ const createUser = async (req, res, next) => {
     }
 }
 const getUser = async (req, res) => {
+    const{page,limit}=req.query;
+    const pageNumber=Number(page)||1;
+    const limitNumber=Number(limit)||10;
+    const skip = (pageNumber - 1) * limitNumber;
     try {
 
-        const user = await User.find();
+        const user = await User.find()
+           .skip(skip)
+           .limit(limitNumber);
 
         res.status(200).json({
             message: "read carefully",
