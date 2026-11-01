@@ -55,19 +55,24 @@ const createUser = async (req, res, next) => {
     }
 }
 const getUser = async (req, res) => {
-    const{page,limit}=req.query;
-    const pageNumber=Number(page)||1;
-    const limitNumber=Number(limit)||10;
+    const { page, limit } = req.query;
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 10;
     const skip = (pageNumber - 1) * limitNumber;
+    const totalUsers = await User.countDocuments();
+    const totalPages = Math.ceil(totalUsers / limitNumber);
     try {
 
         const user = await User.find()
-           .skip(skip)
-           .limit(limitNumber);
+            .skip(skip)
+            .limit(limitNumber);
 
         res.status(200).json({
             message: "read carefully",
-            user: user
+            totalUsers: totalUsers,
+            totalPages: totalPages,
+            currentPage: pageNumber,
+            users: user
         });
 
     } catch (err) {
