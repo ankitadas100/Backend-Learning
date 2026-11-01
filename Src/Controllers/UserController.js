@@ -82,6 +82,18 @@ const getUser = async (req, res) => {
         // });
 
     }
+    if (
+    pageNumber < 1 ||
+    limitNumber < 1 ||
+    !Number.isInteger(pageNumber) ||
+    !Number.isInteger(limitNumber)
+) {
+    return res.status(400).json({
+        message: "Invalid page or limit value"
+    });
+}
+
+    
 }
 
 const getUserById = async (req, res, next) => {
