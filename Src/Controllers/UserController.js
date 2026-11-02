@@ -55,7 +55,7 @@ const createUser = async (req, res, next) => {
     }
 }
 const getUser = async (req, res, next) => {
-    const { page, limit, age } = req.query;
+    const { page, limit, age, minAge, maxAge } = req.query;
     const pageNumber = Number(page) || 1;
     const limitNumber = Number(limit) || 10;
     if (
@@ -69,7 +69,31 @@ const getUser = async (req, res, next) => {
         });
     }
     const skip = (pageNumber - 1) * limitNumber;
-    const filter = age ? { age: Number(age) } : {};
+    // const filter = age ? { age: Number(age) } : {};
+    const filter = {};
+    if (minAge || maxAge) {
+        filter.age = {};
+
+        if (minAge) {
+            filter.age.$gte = Number(minAge);
+        }
+
+        if (maxAge) {
+            filter.age.$lte = Number(maxAge);
+        }
+        if (age && !minAge && !maxAge) {
+            filter.age = Number(age);
+        }
+    }
+    if (
+        (minAge && (!Number.isInteger(Number(minAge)) || Number(minAge) < 0)) ||
+        (maxAge && (!Number.isInteger(Number(maxAge)) || Number(maxAge) < 0)) ||
+        (minAge && maxAge && Number(minAge) > Number(maxAge))
+    ) {
+        return res.status(400).json({
+            message: "Invalid age range"
+        });
+    }
 
 
     try {
