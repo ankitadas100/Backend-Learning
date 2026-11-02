@@ -55,15 +55,16 @@ const createUser = async (req, res, next) => {
     }
 }
 const getUser = async (req, res) => {
-    const { page, limit } = req.query;
+    const { page, limit ,age} = req.query;
     const pageNumber = Number(page) || 1;
     const limitNumber = Number(limit) || 10;
     const skip = (pageNumber - 1) * limitNumber;
-    const totalUsers = await User.countDocuments();
+    const totalUsers = await User.countDocuments(filter);
     const totalPages = Math.ceil(totalUsers / limitNumber);
+    const filter=age ?{age:Number(age)}:{};
     try {
 
-        const user = await User.find()
+        const user = await User.find(filter)
             .skip(skip)
             .limit(limitNumber)
             .select("-password");
