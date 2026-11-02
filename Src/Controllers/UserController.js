@@ -54,20 +54,32 @@ const createUser = async (req, res, next) => {
         // });
     }
 }
-const getUser = async (req, res) => {
-    const { page, limit ,age} = req.query;
+const getUser = async (req, res, next) => {
+    const { page, limit, age } = req.query;
     const pageNumber = Number(page) || 1;
     const limitNumber = Number(limit) || 10;
+    if (
+        pageNumber < 1 ||
+        limitNumber < 1 ||
+        !Number.isInteger(pageNumber) ||
+        !Number.isInteger(limitNumber)
+    ) {
+        return res.status(400).json({
+            message: "Invalid page or limit value"
+        });
+    }
     const skip = (pageNumber - 1) * limitNumber;
-    const totalUsers = await User.countDocuments(filter);
-    const totalPages = Math.ceil(totalUsers / limitNumber);
-    const filter=age ?{age:Number(age)}:{};
-    try {
+    const filter = age ? { age: Number(age) } : {};
 
+
+    try {
+        const totalUsers = await User.countDocuments(filter);
+        const totalPages = Math.ceil(totalUsers / limitNumber);
         const user = await User.find(filter)
             .skip(skip)
             .limit(limitNumber)
-            .select("-password");
+            .select("-password")
+            .sort({ age: -1 });
 
         res.status(200).json({
             message: "read carefully",
@@ -84,18 +96,9 @@ const getUser = async (req, res) => {
         // });
 
     }
-    if (
-    pageNumber < 1 ||
-    limitNumber < 1 ||
-    !Number.isInteger(pageNumber) ||
-    !Number.isInteger(limitNumber)
-) {
-    return res.status(400).json({
-        message: "Invalid page or limit value"
-    });
-}
 
-    
+
+
 }
 
 const getUserById = async (req, res, next) => {
