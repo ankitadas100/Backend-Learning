@@ -65,7 +65,8 @@ const getUser = async (req, res) => {
 
         const user = await User.find()
             .skip(skip)
-            .limit(limitNumber);
+            .limit(limitNumber)
+            .select("-password");
 
         res.status(200).json({
             message: "read carefully",
