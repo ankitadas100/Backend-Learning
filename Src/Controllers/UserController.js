@@ -55,7 +55,7 @@ const createUser = async (req, res, next) => {
     }
 }
 const getUser = async (req, res, next) => {
-    const { page, limit, age, minAge, maxAge } = req.query;
+    const { page, limit, age, minAge, maxAge ,role} = req.query;
     const pageNumber = Number(page) || 1;
     const limitNumber = Number(limit) || 10;
     if (
@@ -93,6 +93,14 @@ const getUser = async (req, res, next) => {
         return res.status(400).json({
             message: "Invalid age range"
         });
+    }
+    if(role && !["user","admin"].includes(role)){
+        return res.status(400).json({
+            message:"invalid role"
+        })
+    }
+    if(role){
+        filter.role=role;
     }
 
 
