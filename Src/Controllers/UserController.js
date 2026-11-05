@@ -55,7 +55,7 @@ const createUser = async (req, res, next) => {
     }
 }
 const getUser = async (req, res, next) => {
-    const { page, limit, age, minAge, maxAge ,role} = req.query;
+    const { page, limit, age, minAge, maxAge ,role,sortBy,order} = req.query;
     const pageNumber = Number(page) || 1;
     const limitNumber = Number(limit) || 10;
     if (
