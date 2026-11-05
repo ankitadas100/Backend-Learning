@@ -55,7 +55,7 @@ const createUser = async (req, res, next) => {
     }
 }
 const getUser = async (req, res, next) => {
-    const { page, limit, age, minAge, maxAge ,role,sortBy,order} = req.query;
+    const { page, limit, age, minAge, maxAge, role, sortBy, order } = req.query;
     const pageNumber = Number(page) || 1;
     const limitNumber = Number(limit) || 10;
     if (
@@ -94,40 +94,47 @@ const getUser = async (req, res, next) => {
             message: "Invalid age range"
         });
     }
-    if(role && !["user","admin"].includes(role)){
+    if (role && !["user", "admin"].includes(role)) {
         return res.status(400).json({
-            message:"invalid role"
+            message: "invalid role"
         })
     }
-    if(role){
-        filter.role=role;
+    if (role) {
+        filter.role = role;
     }
 
+ const sortOrder = order === "asc" ? 1 : -1;
+        const allowedSortFields = ["age", "name"];
+        const sortField = allowedSortFields.includes(sortBy)
+            ? sortBy
+            : "age";
 
     try {
         const totalUsers = await User.countDocuments(filter);
         const totalPages = Math.ceil(totalUsers / limitNumber);
         const user = await User.find(filter)
+       
             .skip(skip)
-            .limit(limitNumber)
-            .select("-password")
-            .sort({ age: -1 });
+    .limit(limitNumber)
+    .select("-password   -resetToken")
+    // .sort({ age: -1 });
+    .sort({ [sortField]: sortOrder })
 
-        res.status(200).json({
-            message: "read carefully",
-            totalUsers: totalUsers,
-            totalPages: totalPages,
-            currentPage: pageNumber,
-            users: user
-        });
+res.status(200).json({
+    message: "read carefully",
+    totalUsers: totalUsers,
+    totalPages: totalPages,
+    currentPage: pageNumber,
+    users: user
+});
 
     } catch (err) {
-        next(err)
-        // res.status(500).json({
-        //     message: "something went wrong"
-        // });
+    next(err)
+    // res.status(500).json({
+    //     message: "something went wrong"
+    // });
 
-    }
+}
 
 
 
@@ -148,6 +155,7 @@ const getUserById = async (req, res, next) => {
                 message: "user not found"
             })
         }
+
         //  res.status(200).json({
         //         message: "this is the new id",
         //         users: user
