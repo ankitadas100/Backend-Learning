@@ -102,7 +102,11 @@ const getUser = async (req, res, next) => {
     if (role) {
         filter.role = role;
     }
-
+if(order && !["asc","desc"].includes(order)){
+    return res.status(400).json({
+        message:"invalid sorting order"
+    })
+}
  const sortOrder = order === "asc" ? 1 : -1;
         const allowedSortFields = ["age", "name"];
         const sortField = allowedSortFields.includes(sortBy)
