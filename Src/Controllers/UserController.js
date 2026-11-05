@@ -55,7 +55,7 @@ const createUser = async (req, res, next) => {
     }
 }
 const getUser = async (req, res, next) => {
-    const { page, limit, age, minAge, maxAge, role, sortBy, order } = req.query;
+    const { page, limit, age, minAge, maxAge, role, sortBy, order,search } = req.query;
     const pageNumber = Number(page) || 1;
     const limitNumber = Number(limit) || 10;
     if (
@@ -70,7 +70,28 @@ const getUser = async (req, res, next) => {
     }
     const skip = (pageNumber - 1) * limitNumber;
     // const filter = age ? { age: Number(age) } : {};
-    const filter = {};
+    const filter = {}
+    if (search !== undefined && (
+    typeof search !== "string" ||
+    search.trim().length === 0 ||
+    search.trim().length > 50
+)) {
+    return res.status(400).json({
+        message: "Invalid search query"
+    });
+}
+    const searchText = typeof search === "string" ? search.trim() : "";
+
+const safeSearch = searchText.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+);
+   if (safeSearch) {
+    filter.$or = [
+        { name: { $regex: safeSearch, $options: "i" } },
+        { email: { $regex: safeSearch, $options: "i" } }
+    ];
+}
     if (minAge || maxAge) {
         filter.age = {};
 
