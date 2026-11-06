@@ -374,6 +374,13 @@ const getUserStats = async (req, res, next) => {
                     _id: "$role",
                     totalUser: { $sum: 1 }
                 }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    role: "$_id",
+                    totalUsers: 1
+                }
             }
 
         ])
@@ -387,4 +394,4 @@ const getUserStats = async (req, res, next) => {
     }
 }
 
-module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword, resetPassword, getUserStats }
+module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword, resetPassword, getUserStats } 
