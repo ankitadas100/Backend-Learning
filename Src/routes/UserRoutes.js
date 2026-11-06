@@ -1,13 +1,13 @@
 const express=require("express");
 const router=express.Router();
 const User = require("../models/user");
-const {createUser,getUser, getUserById, patchUser, deleteUser,loginUser,refreshToken,forgetPassword,resetPassword}=require("../Controllers/UserController");
+const {createUser,getUser, getUserById, patchUser, deleteUser,loginUser,refreshToken,forgetPassword,resetPassword, getUserStats}=require("../Controllers/UserController");
 const authmiddleware = require("../middleware/authmiddleware");
 const checkRole = require("../middleware/rolemiddleware");
 
 
 router.post("/user",createUser);
-    
+   router.get("/user-stats", getUserStats); 
 
 const CheckUser = (req, res, next) => {
 
