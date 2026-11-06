@@ -361,23 +361,28 @@ const resetPassword = async (req, res) => {
 
     }
 }
-    const getUserStats = async (req, res, next) => {
-        try {
-            const result = await User.aggregate([
-                {
-                    $group: {
-                        _id: "$role",
-                        totalUser: { $sum: 1 }
-                    }
+const getUserStats = async (req, res, next) => {
+    try {
+        const result = await User.aggregate([
+            {
+                $match: {
+                    status: "active"
                 }
+            },
+            {
+                $group: {
+                    _id: "$role",
+                    totalUser: { $sum: 1 }
+                }
+            }
 
-            ])
-            res.status(200).json({
-                message: "fetched succesfully",
-                stats: result
-            })
-        }
-catch (err) {
+        ])
+        res.status(200).json({
+            message: "fetched succesfully",
+            stats: result
+        })
+    }
+    catch (err) {
         next(err)
     }
 }
