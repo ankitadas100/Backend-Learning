@@ -55,7 +55,7 @@ const createUser = async (req, res, next) => {
     }
 }
 const getUser = async (req, res, next) => {
-    const { page, limit, age, minAge, maxAge, role, sortBy, order,search } = req.query;
+    const { page, limit, age, minAge, maxAge, role, sortBy, order, search } = req.query;
     const pageNumber = Number(page) || 1;
     const limitNumber = Number(limit) || 10;
     if (
@@ -72,26 +72,26 @@ const getUser = async (req, res, next) => {
     // const filter = age ? { age: Number(age) } : {};
     const filter = {}
     if (search !== undefined && (
-    typeof search !== "string" ||
-    search.trim().length === 0 ||
-    search.trim().length > 50
-)) {
-    return res.status(400).json({
-        message: "Invalid search query"
-    });
-}
+        typeof search !== "string" ||
+        search.trim().length === 0 ||
+        search.trim().length > 50
+    )) {
+        return res.status(400).json({
+            message: "Invalid search query"
+        });
+    }
     const searchText = typeof search === "string" ? search.trim() : "";
 
-const safeSearch = searchText.replace(
-    /[.*+?^${}()|[\]\\]/g,
-    "\\$&"
-);
-   if (safeSearch) {
-    filter.$or = [
-        { name: { $regex: safeSearch, $options: "i" } },
-        { email: { $regex: safeSearch, $options: "i" } }
-    ];
-}
+    const safeSearch = searchText.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&"
+    );
+    if (safeSearch) {
+        filter.$or = [
+            { name: { $regex: safeSearch, $options: "i" } },
+            { email: { $regex: safeSearch, $options: "i" } }
+        ];
+    }
     if (minAge || maxAge) {
         filter.age = {};
 
@@ -123,43 +123,43 @@ const safeSearch = searchText.replace(
     if (role) {
         filter.role = role;
     }
-if(order && !["asc","desc"].includes(order)){
-    return res.status(400).json({
-        message:"invalid sorting order"
-    })
-}
- const sortOrder = order === "asc" ? 1 : -1;
-        const allowedSortFields = ["age", "name"];
-        const sortField = allowedSortFields.includes(sortBy)
-            ? sortBy
-            : "age";
+    if (order && !["asc", "desc"].includes(order)) {
+        return res.status(400).json({
+            message: "invalid sorting order"
+        })
+    }
+    const sortOrder = order === "asc" ? 1 : -1;
+    const allowedSortFields = ["age", "name"];
+    const sortField = allowedSortFields.includes(sortBy)
+        ? sortBy
+        : "age";
 
     try {
         const totalUsers = await User.countDocuments(filter);
         const totalPages = Math.ceil(totalUsers / limitNumber);
         const user = await User.find(filter)
-       
-            .skip(skip)
-    .limit(limitNumber)
-    .select("-password   -resetToken")
-    // .sort({ age: -1 });
-    .sort({ [sortField]: sortOrder })
 
-res.status(200).json({
-    message: "read carefully",
-    totalUsers: totalUsers,
-    totalPages: totalPages,
-    currentPage: pageNumber,
-    users: user
-});
+            .skip(skip)
+            .limit(limitNumber)
+            .select("-password   -resetToken")
+            // .sort({ age: -1 });
+            .sort({ [sortField]: sortOrder })
+
+        res.status(200).json({
+            message: "read carefully",
+            totalUsers: totalUsers,
+            totalPages: totalPages,
+            currentPage: pageNumber,
+            users: user
+        });
 
     } catch (err) {
-    next(err)
-    // res.status(500).json({
-    //     message: "something went wrong"
-    // });
+        next(err)
+        // res.status(500).json({
+        //     message: "something went wrong"
+        // });
 
-}
+    }
 
 
 
@@ -361,5 +361,25 @@ const resetPassword = async (req, res) => {
 
     }
 }
+    const getUserStats = async (req, res, next) => {
+        try {
+            const result = await User.aggregate([
+                {
+                    $group: {
+                        _id: "$role",
+                        totalUser: { $sum: 1 }
+                    }
+                }
 
-module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword, resetPassword }
+            ])
+            res.status(200).json({
+                message: "fetched succesfully",
+                stats: result
+            })
+        }
+catch (err) {
+        next(err)
+    }
+}
+
+module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword, resetPassword, getUserStats }
