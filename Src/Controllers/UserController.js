@@ -372,7 +372,7 @@ const getUserStats = async (req, res, next) => {
             {
                 $group: {
                     _id: "$role",
-                    totalUser: { $sum: 1 }
+                     totalUsers: { $sum: 1 }
                 }
             },
             {
@@ -380,6 +380,11 @@ const getUserStats = async (req, res, next) => {
                     _id: 0,
                     role: "$_id",
                     totalUsers: 1
+                }
+            },
+            {
+                $sort: {
+                    totalUsers: -1
                 }
             }
 
