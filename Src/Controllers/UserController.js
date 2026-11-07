@@ -3,6 +3,7 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
+const user = require("../models/user");
 const createUser = async (req, res, next) => {
     const { name, email, age, password } = req.body
     if (!name || !email || !age || !password
@@ -372,7 +373,7 @@ const getUserStats = async (req, res, next) => {
             {
                 $group: {
                     _id: "$role",
-                     totalUsers: { $sum: 1 }
+                    totalUsers: { $sum: 1 }
                 }
             },
             {
@@ -389,10 +390,21 @@ const getUserStats = async (req, res, next) => {
             }
 
         ])
+        const totalActive = await User.aggregate([
+            {
+                $match: {
+                    status: "active"
+                }
+            },
+            {
+                $count: "totalActiveUsers"
+            }
+        ]);
         res.status(200).json({
-            message: "fetched succesfully",
-            stats: result
-        })
+            message: "User statistics fetched successfully",
+            stats: result,
+            totalActiveUsers: totalActive[0]?.totalActiveUsers || 0
+        });
     }
     catch (err) {
         next(err)
