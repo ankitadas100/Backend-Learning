@@ -372,8 +372,10 @@ const getUserStats = async (req, res, next) => {
             },
             {
                 $group: {
-                    _id: "$role",
-                    totalUsers: { $sum: 1 }
+                    _id: null,
+                    totalUsers: { $sum: 1 },
+                    averageAge: { $avg: "$age" }
+
                 }
             },
             {
@@ -399,13 +401,16 @@ const getUserStats = async (req, res, next) => {
             {
                 $count: "totalActiveUsers"
             }
-        ]);
+        ])
+
         res.status(200).json({
             message: "User statistics fetched successfully",
             stats: result,
             totalActiveUsers: totalActive[0]?.totalActiveUsers || 0
         });
+
     }
+
     catch (err) {
         next(err)
     }
