@@ -410,6 +410,15 @@ const getUserStats = async (req, res, next) => {
         }
     }
 ]);
+const ageRange = await User.aggregate([
+    {
+        $group: {
+            _id: null,
+            minimumAge: { $min: "$age" },
+            maximumAge: { $max: "$age" }
+        }
+    }
+]);
 
         res.status(200).json({
             message: "User statistics fetched successfully",
