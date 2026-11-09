@@ -402,14 +402,22 @@ const getUserStats = async (req, res, next) => {
                 $count: "totalActiveUsers"
             }
         ])
-        const averageAge = await User.aggregate([
-            {
-                $group: {
-                    _id: null,
-                    averageAge: { $avg: "$age" }
-                }
+       const averageAge = await User.aggregate([
+    {
+        $group: {
+            _id: null,
+            averageAge: { $avg: "$age" }
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            averageAge: {
+                $round: ["$averageAge", 2]
             }
-        ]);
+        }
+    }
+]);
         const ageRange = await User.aggregate([
             {
                 $group: {
