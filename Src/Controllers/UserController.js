@@ -374,7 +374,7 @@ const getUserStats = async (req, res, next) => {
                 $group: {
                     _id: "role",
                     totalUsers: { $sum: 1 },
-                   
+
 
                 }
             },
@@ -403,28 +403,30 @@ const getUserStats = async (req, res, next) => {
             }
         ])
         const averageAge = await User.aggregate([
-    {
-        $group: {
-            _id: null,
-            averageAge: { $avg: "$age" }
-        }
-    }
-]);
-const ageRange = await User.aggregate([
-    {
-        $group: {
-            _id: null,
-            minimumAge: { $min: "$age" },
-            maximumAge: { $max: "$age" }
-        }
-    }
-]);
+            {
+                $group: {
+                    _id: null,
+                    averageAge: { $avg: "$age" }
+                }
+            }
+        ]);
+        const ageRange = await User.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    minimumAge: { $min: "$age" },
+                    maximumAge: { $max: "$age" }
+                }
+            }
+        ]);
 
         res.status(200).json({
             message: "User statistics fetched successfully",
             stats: result,
             totalActiveUsers: totalActive[0]?.totalActiveUsers || 0,
-             averageAge: averageAge[0]?.averageAge || 0
+            averageAge: averageAge[0]?.averageAge || 0,
+            minimumAge: ageRange[0]?.minimumAge ?? null,
+            maximumAge: ageRange[0]?.maximumAge ?? null
         });
 
     }
