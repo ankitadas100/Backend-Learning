@@ -461,6 +461,22 @@ const getDashboardStats = async (req, res, next) => {
                 }
             }
         ]);
+        const averageAge = await User.aggregate([
+    {
+        $group: {
+            _id: null,
+            averageAge: { $avg: "$age" }
+        }
+    },
+    {
+        $project: {
+            _id: 0,
+            averageAge: {
+                $round: ["$averageAge", 2]
+            }
+        }
+    }
+]);
     }
     catch (err) {
         next(err)
