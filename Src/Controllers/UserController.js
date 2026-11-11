@@ -402,22 +402,22 @@ const getUserStats = async (req, res, next) => {
                 $count: "totalActiveUsers"
             }
         ])
-       const averageAge = await User.aggregate([
-    {
-        $group: {
-            _id: null,
-            averageAge: { $avg: "$age" }
-        }
-    },
-    {
-        $project: {
-            _id: 0,
-            averageAge: {
-                $round: ["$averageAge", 2]
+        const averageAge = await User.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    averageAge: { $avg: "$age" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    averageAge: {
+                        $round: ["$averageAge", 2]
+                    }
+                }
             }
-        }
-    }
-]);
+        ]);
         const ageRange = await User.aggregate([
             {
                 $group: {
@@ -427,6 +427,7 @@ const getUserStats = async (req, res, next) => {
                 }
             }
         ]);
+
 
         res.status(200).json({
             message: "User statistics fetched successfully",
@@ -443,5 +444,20 @@ const getUserStats = async (req, res, next) => {
         next(err)
     }
 }
+    const getDashboardStats = async (req, res, next) => {
+        try {
+            const totalUsers = await User.countDocuments();
+            const activeUsers = await User.countDocuments({
+                status: "active"
+            });
+            const inactiveUsers = await User.countDocuments({
+                status: "inactive"
+            });
+        }
+        catch (err) {
+            next(err)
+        }
+    };
 
-module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword, resetPassword, getUserStats } 
+
+module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword, resetPassword, getUserStats,getDashboardStats } 

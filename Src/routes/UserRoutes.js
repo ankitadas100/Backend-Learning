@@ -1,9 +1,10 @@
 const express=require("express");
 const router=express.Router();
 const User = require("../models/user");
-const {createUser,getUser, getUserById, patchUser, deleteUser,loginUser,refreshToken,forgetPassword,resetPassword, getUserStats}=require("../Controllers/UserController");
+const {createUser,getUser, getUserById, patchUser, deleteUser,loginUser,refreshToken,forgetPassword,resetPassword, getUserStats,}=require("../Controllers/UserController");
 const authmiddleware = require("../middleware/authmiddleware");
 const checkRole = require("../middleware/rolemiddleware");
+const { getDashboardStats } = require("../Controllers/UserController");
 
 
 router.post("/user",createUser);
@@ -53,4 +54,5 @@ router.post("/refresh",refreshToken);
 router.post("/forgot-Password",forgetPassword);
 router.post("/reset-password",resetPassword);
 router.post("/users",createUser);
+router.get("/dashboard-stats",getDashboardStats);
 module.exports = router;
