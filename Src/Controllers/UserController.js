@@ -444,20 +444,28 @@ const getUserStats = async (req, res, next) => {
         next(err)
     }
 }
-    const getDashboardStats = async (req, res, next) => {
-        try {
-            const totalUsers = await User.countDocuments();
-            const activeUsers = await User.countDocuments({
-                status: "active"
-            });
-            const inactiveUsers = await User.countDocuments({
-                status: "inactive"
-            });
-        }
-        catch (err) {
-            next(err)
-        }
-    };
+const getDashboardStats = async (req, res, next) => {
+    try {
+        const totalUsers = await User.countDocuments();
+        const activeUsers = await User.countDocuments({
+            status: "active"
+        });
+        const inactiveUsers = await User.countDocuments({
+            status: "inactive"
+        });
+        const roleStats = await User.aggregate([
+            {
+                $group: {
+                    _id: "$role",
+                    totalUsers: { $sum: 1 }
+                }
+            }
+        ]);
+    }
+    catch (err) {
+        next(err)
+    }
+};
 
 
-module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword, resetPassword, getUserStats,getDashboardStats } 
+module.exports = { createUser, getUser, getUserById, patchUser, deleteUser, loginUser, refreshToken, forgetPassword, resetPassword, getUserStats, getDashboardStats } 
