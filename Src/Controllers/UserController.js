@@ -462,30 +462,40 @@ const getDashboardStats = async (req, res, next) => {
             }
         ]);
         const averageAge = await User.aggregate([
-    {
-        $group: {
-            _id: null,
-            averageAge: { $avg: "$age" }
-        }
-    },
-    {
-        $project: {
-            _id: 0,
-            averageAge: {
-                $round: ["$averageAge", 2]
+            {
+                $group: {
+                    _id: null,
+                    averageAge: { $avg: "$age" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    averageAge: {
+                        $round: ["$averageAge", 2]
+                    }
+                }
             }
-        }
-    }
-]);
-const ageRange = await User.aggregate([
-    {
-        $group: {
-            _id: null,
-            minimumAge: { $min: "$age" },
-            maximumAge: { $max: "$age" }
-        }
-    }
-]);
+        ]);
+        const ageRange = await User.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    minimumAge: { $min: "$age" },
+                    maximumAge: { $max: "$age" }
+                }
+            }
+        ]);
+        res.status(200).json({
+            message: "Dashboard statistics fetched successfully",
+            totalUsers,
+            activeUsers,
+            inactiveUsers,
+            roleStats,
+            averageAge: averageAge[0]?.averageAge ?? null,
+            minimumAge: ageRange[0]?.minimumAge ?? null,
+            maximumAge: ageRange[0]?.maximumAge ?? null
+        });
     }
     catch (err) {
         next(err)
