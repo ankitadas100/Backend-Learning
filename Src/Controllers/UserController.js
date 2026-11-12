@@ -477,6 +477,15 @@ const getDashboardStats = async (req, res, next) => {
         }
     }
 ]);
+const ageRange = await User.aggregate([
+    {
+        $group: {
+            _id: null,
+            minimumAge: { $min: "$age" },
+            maximumAge: { $max: "$age" }
+        }
+    }
+]);
     }
     catch (err) {
         next(err)
